@@ -1,0 +1,90 @@
+name: daily-intel digest
+
+on:
+  schedule:
+    # All times UTC — ET is UTC-4 (EDT) / UTC-5 (EST)
+    - cron: "0 10 * * 1-5"   # 6am ET weekdays (morning brief)
+    - cron: "0 22 * * 1-5"   # 6pm ET weekdays (evening recap)
+    - cron: "0 22 * * 0"     # 6pm ET Sunday   (weekly summary)
+  workflow_dispatch:
+    inputs:
+      digest_type:
+        description: "Digest type"
+        required: true
+        default: "daily"
+        type: choice
+        options: [daily, weekly]
+      dry_run:
+        description: "Dry run (no email)"
+        required: false
+        default: false
+        type: boolean
+
+jobs:
+  run-digest:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write   # needed to commit digest output back to repo
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Determine digest type
+        id: dtype
+        run: |
+          # workflow_dispatch overrides schedule
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "type=${{ github.event.inputs.digest_type }}" >> $GITHUB_OUTPUT
+            echo "dry=${{ github.event.inputs.dry_run }}" >> $GITHUB_OUTPUT
+          else
+            HOUR=$(date -u +%H)
+            DOW=$(date -u +%u)   # 1=Mon ... 7=Sun
+            if [ "$DOW" = "7" ]; then
+              echo "type=weekly" >> $GITHUB_OUTPUT
+            else
+              echo "type=daily" >> $GITHUB_OUTPUT
+            fi
+            echo "dry=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Run digest
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GMAIL_USER: ${{ secrets.GMAIL_USER }}
+          GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+          FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
+          HIBP_API_KEY: ${{ secrets.HIBP_API_KEY }}
+          NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
+        run: |
+          DRY_FLAG=""
+          if [ "${{ steps.dtype.outputs.dry }}" = "true" ]; then
+            DRY_FLAG="--dry"
+          fi
+          python main.py --now ${{ steps.dtype.outputs.type }} $DRY_FLAG
+
+      - name: Commit digest output to repo
+        if: steps.dtype.outputs.dry != 'true'
+        run: |
+          git config user.name "daily-intel[bot]"
+          git config user.email "daily-intel@users.noreply.github.com"
+          git add digests/
+          # Only commit if there are new digest files
+          if git diff --staged --quiet; then
+            echo "No new digest files to commit."
+          else
+            git commit -m "digest: $(date -u +'%Y-%m-%d %H:%M UTC') [${{ steps.dtype.outputs.type }}]"
+            git push
+          fi

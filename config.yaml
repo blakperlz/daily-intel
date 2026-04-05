@@ -1,0 +1,97 @@
+# ─────────────────────────────────────────────
+# daily-intel configuration
+# Copy this file as-is. Secrets go in .env only.
+# ─────────────────────────────────────────────
+
+digest:
+  # Delivery recipients (up to 5 for Phase 1)
+  recipients:
+    - jeff.watson00@gmail.com
+  # Schedule (cron syntax, local server time)
+  morning_cron: "0 6 * * 1-5"     # 6am weekdays
+  evening_cron: "0 18 * * 1-5"    # 6pm weekdays
+  weekly_cron:  "0 18 * * 0"      # Sunday 6pm
+  timezone: "America/New_York"
+
+llm:
+  provider: "claude"               # claude | gemini | ollama
+  model: "claude-haiku-4-5-20251001"
+  max_tokens: 2048
+  temperature: 0.3                 # Low temp = consistent, factual output
+
+collectors:
+  financial:
+    enabled: true
+    tickers: ["SPY", "QQQ", "BTC-USD", "GLD", "TLT", "DXY"]
+    macro_series: ["FEDFUNDS", "CPIAUCSL", "UNRATE"]  # FRED series IDs
+
+  geopolitical:
+    enabled: true
+    # GDELT two-layer filter — both must match
+    countries: ["US", "CN", "RU", "IR", "KP", "UA", "IL", "TW"]
+    keywords:
+      - sanctions
+      - cyberattack
+      - coup
+      - airstrike
+      - missile
+      - infrastructure attack
+      - espionage
+      - nuclear
+      - invasion
+      - blockade
+    max_events: 20
+
+  cyber:
+    enabled: true
+    nvd:
+      min_cvss_score: 7.0
+      days_back: 1
+      max_results: 10
+    cisa_kev:
+      enabled: true
+    hibp:
+      enabled: true
+      # Domains to monitor for breaches (your org domains)
+      monitor_domains: []
+
+  social:
+    bluesky:
+      enabled: true
+      keywords:
+        - federal reserve
+        - market crash
+        - cyberattack
+        - sanctions
+        - geopolitical
+        - inflation
+        - recession
+        - china taiwan
+        - north korea
+      max_posts: 15
+
+  rss:
+    enabled: true
+    feeds:
+      - name: Reuters
+        url: "https://feeds.reuters.com/reuters/topNews"
+      - name: AP News
+        url: "https://rsshub.app/apnews/topics/ap-top-news"
+      - name: Krebs on Security
+        url: "https://krebsonsecurity.com/feed/"
+      - name: Dark Reading
+        url: "https://www.darkreading.com/rss.xml"
+      - name: CISA Alerts
+        url: "https://www.cisa.gov/cybersecurity-advisories/advisories.xml"
+      - name: The Record (Cyber)
+        url: "https://therecord.media/feed"
+    max_items_per_feed: 5
+
+dark_web:
+  ahmia:
+    enabled: true
+    keywords:
+      - data breach
+      - leaked credentials
+      - ransomware
+    max_results: 5
