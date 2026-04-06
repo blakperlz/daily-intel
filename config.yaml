@@ -7,6 +7,7 @@ digest:
   # Delivery recipients (up to 5 for Phase 1)
   recipients:
     - jeff.watson00@gmail.com
+    - silvercrowlab18@gmail.com
   # Schedule (cron syntax, local server time)
   morning_cron: "0 6 * * 1-5"     # 6am weekdays
   evening_cron: "0 18 * * 1-5"    # 6pm weekdays
@@ -14,8 +15,8 @@ digest:
   timezone: "America/New_York"
 
 llm:
-  provider: "claude"               # claude | gemini | ollama
-  model: "claude-haiku-4-5-20251001"
+  provider: "gemini"               # claude | gemini | ollama
+  model: "gemini-1.5-flash"
   max_tokens: 2048
   temperature: 0.3                 # Low temp = consistent, factual output
 
