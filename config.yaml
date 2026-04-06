@@ -16,9 +16,15 @@ digest:
 
 llm:
   provider: "gemini"               # claude | gemini | ollama
+  fallback_provider: "claude"      # optional failover if primary provider fails
   model: "gemini-2.0-flash"
   max_tokens: 2048
   temperature: 0.3                 # Low temp = consistent, factual output
+  max_retries: 2                   # retries for retryable provider errors (e.g. 429)
+  request_spacing_sec: 3.0         # throttle gap between Gemini requests before fallback
+  retry_initial_delay_sec: 2.0
+  retry_backoff_multiplier: 2.0
+  retry_jitter_sec: 0.5
 
 collectors:
   financial:

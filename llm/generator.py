@@ -5,11 +5,16 @@ Model-agnostic via config.yaml provider setting.
 """
 import json
 import os
+import random
+import time
 from typing import List, Dict, Any
 
 from models.intel_item import IntelItem
 from utils.config_loader import get_config, get_secret
 from llm.prompts import SYSTEM_PROMPT, DIGEST_PROMPT, WEEKLY_PROMPT
+
+
+_LAST_GEMINI_REQUEST_TS = 0.0
 
 
 def generate_digest(items: List[IntelItem], digest_type: str = "daily") -> Dict[str, Any]:
@@ -19,7 +24,8 @@ def generate_digest(items: List[IntelItem], digest_type: str = "daily") -> Dict[
     Returns parsed JSON dict.
     """
     cfg = get_config()["llm"]
-    provider = cfg.get("provider", "claude")
+    provider = os.getenv("LLM_PROVIDER", cfg.get("provider", "claude"))
+    fallback_provider = cfg.get("fallback_provider")
 
     # Serialize intel items for the prompt
     intel_data = [item.to_dict() for item in items]
@@ -28,12 +34,30 @@ def generate_digest(items: List[IntelItem], digest_type: str = "daily") -> Dict[
     prompt_template = WEEKLY_PROMPT if digest_type == "weekly" else DIGEST_PROMPT
     user_message = prompt_template.format(intel_json=intel_json)
 
-    if provider == "claude":
-        return _generate_claude(user_message, cfg)
-    elif provider == "gemini":
-        return _generate_gemini(user_message, cfg)
-    else:
-        raise ValueError(f"Unknown LLM provider: {provider}")
+    provider_chain = [provider]
+    if fallback_provider and fallback_provider != provider:
+        provider_chain.append(fallback_provider)
+
+    errors = []
+    for idx, selected_provider in enumerate(provider_chain):
+        try:
+            if selected_provider == "claude":
+                return _generate_claude(user_message, cfg)
+            if selected_provider == "gemini":
+                return _generate_gemini(user_message, cfg)
+            raise ValueError(f"Unknown LLM provider: {selected_provider}")
+        except Exception as exc:
+            errors.append(f"{selected_provider}: {exc}")
+            has_next = idx < len(provider_chain) - 1
+            if has_next:
+                print(
+                    f"[llm] Provider '{selected_provider}' failed ({exc}). "
+                    f"Trying fallback '{provider_chain[idx + 1]}'."
+                )
+                continue
+            raise RuntimeError(
+                "All configured LLM providers failed: " + " | ".join(errors)
+            ) from exc
 
 
 def _generate_claude(user_message: str, cfg: dict) -> Dict[str, Any]:
@@ -63,16 +87,59 @@ def _generate_gemini(user_message: str, cfg: dict) -> Dict[str, Any]:
         raise ValueError("GEMINI_API_KEY not set in .env")
 
     client = genai.Client(api_key=api_key)
-    response = client.models.generate_content(
-        model=cfg.get("model", "gemini-2.0-flash"),
-        contents=user_message,
-        config=types.GenerateContentConfig(
-            system_instruction=SYSTEM_PROMPT,
-            temperature=cfg.get("temperature", 0.3),
-            max_output_tokens=cfg.get("max_tokens", 2048),
-        ),
-    )
-    return _parse_json(response.text.strip())
+    max_retries = int(cfg.get("max_retries", 2))
+    initial_delay = float(cfg.get("retry_initial_delay_sec", 2.0))
+    backoff = float(cfg.get("retry_backoff_multiplier", 2.0))
+    jitter = float(cfg.get("retry_jitter_sec", 0.5))
+
+    delay = initial_delay
+    for attempt in range(max_retries + 1):
+        _throttle_gemini_requests(cfg)
+        try:
+            response = client.models.generate_content(
+                model=cfg.get("model", "gemini-2.0-flash"),
+                contents=user_message,
+                config=types.GenerateContentConfig(
+                    system_instruction=SYSTEM_PROMPT,
+                    temperature=cfg.get("temperature", 0.3),
+                    max_output_tokens=cfg.get("max_tokens", 2048),
+                ),
+            )
+            return _parse_json(response.text.strip())
+        except Exception as exc:
+            if not _is_quota_or_rate_limit_error(exc) or attempt >= max_retries:
+                raise
+
+            sleep_for = delay + random.uniform(0, jitter)
+            print(
+                f"[llm] Gemini rate/quota limit hit (attempt {attempt + 1}/{max_retries + 1}). "
+                f"Retrying in {sleep_for:.1f}s..."
+            )
+            time.sleep(sleep_for)
+            delay *= backoff
+
+    raise RuntimeError("Gemini request failed after retries")
+
+
+def _is_quota_or_rate_limit_error(exc: Exception) -> bool:
+    msg = str(exc).lower()
+    return any(token in msg for token in ["429", "resource_exhausted", "quota", "rate limit"])
+
+
+def _throttle_gemini_requests(cfg: dict) -> None:
+    """Enforce a minimum gap between Gemini calls to reduce burst rate limits."""
+    min_interval = float(cfg.get("request_spacing_sec", 0.0))
+    if min_interval <= 0:
+        return
+
+    global _LAST_GEMINI_REQUEST_TS
+    now = time.time()
+    elapsed = now - _LAST_GEMINI_REQUEST_TS
+    if elapsed < min_interval:
+        wait_for = min_interval - elapsed
+        print(f"[llm] Throttling Gemini call for {wait_for:.1f}s to avoid rate limits...")
+        time.sleep(wait_for)
+    _LAST_GEMINI_REQUEST_TS = time.time()
 
 '''
 # Replacing this function.  commenting out till new code is validated.
