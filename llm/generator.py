@@ -54,7 +54,28 @@ def _generate_claude(user_message: str, cfg: dict) -> Dict[str, Any]:
     raw = response.content[0].text.strip()
     return _parse_json(raw)
 
+def _generate_gemini(user_message: str, cfg: dict) -> Dict[str, Any]:
+    from google import genai
+    from google.genai import types
 
+    api_key = get_secret("GEMINI_API_KEY")
+    if not api_key:
+        raise ValueError("GEMINI_API_KEY not set in .env")
+
+    client = genai.Client(api_key=api_key)
+    response = client.models.generate_content(
+        model=cfg.get("model", "gemini-2.0-flash"),
+        contents=user_message,
+        config=types.GenerateContentConfig(
+            system_instruction=SYSTEM_PROMPT,
+            temperature=cfg.get("temperature", 0.3),
+            max_output_tokens=cfg.get("max_tokens", 2048),
+        ),
+    )
+    return _parse_json(response.text.strip())
+
+'''
+# Replacing this function.  commenting out till new code is validated.
 def _generate_gemini(user_message: str, cfg: dict) -> Dict[str, Any]:
     import google.generativeai as genai
 
@@ -70,7 +91,7 @@ def _generate_gemini(user_message: str, cfg: dict) -> Dict[str, Any]:
     response = model.generate_content(user_message)
     raw = response.text.strip()
     return _parse_json(raw)
-
+'''
 
 def _parse_json(raw: str) -> Dict[str, Any]:
     """Strip markdown fences if present and parse JSON."""

@@ -8,7 +8,7 @@ requests>=2.31.0
 
 # LLM
 anthropic>=0.40.0
-google-generativeai>=0.8.0   # Gemini fallback
+google-genai>=0.8.0   # Gemini fallback
 
 # Financial data
 yfinance>=0.2.40
