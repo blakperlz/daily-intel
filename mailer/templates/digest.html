@@ -20,6 +20,8 @@
       --medium: #3fb950;
       --low: #58a6ff;
       --info: #8b949e;
+      --card-bg: #161b22;
+      --card-hover: #1c2128;
     }
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
@@ -31,121 +33,182 @@
     }
     .wrapper { max-width: 680px; margin: 0 auto; padding: 20px 16px; }
 
-    /* Header */
+    /* ── Header ── */
     .header {
-      border-bottom: 2px solid var(--accent);
+      border-bottom: 3px solid var(--accent);
       padding-bottom: 16px;
-      margin-bottom: 24px;
+      margin-bottom: 20px;
     }
     .header-top { display: flex; justify-content: space-between; align-items: flex-start; }
-    .brand { font-size: 11px; font-weight: 700; letter-spacing: 2px; color: var(--accent-light); text-transform: uppercase; }
+    .brand {
+      font-size: 11px; font-weight: 700; letter-spacing: 3px;
+      color: var(--accent-light); text-transform: uppercase;
+    }
     .datestamp { font-size: 11px; color: var(--muted); text-align: right; }
-    .digest-title { font-size: 22px; font-weight: 700; color: var(--text); margin-top: 8px; }
-    .digest-subtitle { font-size: 12px; color: var(--muted); margin-top: 2px; }
+    .digest-title { font-size: 22px; font-weight: 700; color: var(--text); margin-top: 8px; line-height: 1.3; }
+    .digest-subtitle { font-size: 11px; color: var(--muted); margin-top: 4px; }
 
-    /* Executive brief */
+    /* ── Top Story Banner ── */
+    .top-story-banner {
+      background: linear-gradient(135deg, #c0392b, #922b21);
+      border-radius: 6px;
+      padding: 14px 18px;
+      margin-bottom: 20px;
+    }
+    .top-story-label {
+      font-size: 9px; font-weight: 700; letter-spacing: 2px;
+      color: rgba(255,255,255,0.7); text-transform: uppercase; margin-bottom: 5px;
+    }
+    .top-story-headline {
+      font-size: 16px; font-weight: 700; color: #ffffff; line-height: 1.35;
+    }
+
+    /* ── Executive Brief ── */
     .executive-brief {
       background: var(--surface);
       border-left: 3px solid var(--accent);
       border-radius: 4px;
       padding: 14px 16px;
-      margin-bottom: 20px;
-      font-size: 14px;
+      margin-bottom: 22px;
+      font-size: 13px;
       color: var(--text);
+      line-height: 1.65;
     }
     .section-label {
-      font-size: 10px;
-      font-weight: 700;
-      letter-spacing: 1.5px;
-      color: var(--accent-light);
-      text-transform: uppercase;
-      margin-bottom: 6px;
+      font-size: 9px; font-weight: 700; letter-spacing: 1.5px;
+      color: var(--accent-light); text-transform: uppercase; margin-bottom: 7px;
     }
 
-    /* Sections */
+    /* ── Section blocks ── */
     .section {
       background: var(--surface);
       border: 1px solid var(--border);
-      border-radius: 6px;
-      margin-bottom: 16px;
+      border-radius: 8px;
+      margin-bottom: 20px;
       overflow: hidden;
     }
     .section-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 10px 14px;
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 10px 16px;
       background: var(--surface2);
       border-bottom: 1px solid var(--border);
     }
     .section-title {
-      font-size: 12px;
-      font-weight: 700;
-      letter-spacing: 1px;
-      text-transform: uppercase;
-      color: var(--text);
+      font-size: 12px; font-weight: 700; letter-spacing: 1px;
+      text-transform: uppercase; color: var(--text);
     }
+
+    /* ── Severity badges ── */
     .severity-badge {
-      font-size: 10px;
-      font-weight: 700;
-      letter-spacing: 1px;
-      padding: 2px 8px;
-      border-radius: 10px;
-      text-transform: uppercase;
+      font-size: 9px; font-weight: 700; letter-spacing: 1px;
+      padding: 2px 8px; border-radius: 10px; text-transform: uppercase;
     }
-    .sev-critical { background: rgba(248,81,73,0.15); color: var(--critical); border: 1px solid var(--critical); }
+    .sev-critical { background: rgba(248,81,73,0.15);  color: var(--critical); border: 1px solid var(--critical); }
     .sev-high     { background: rgba(210,153,34,0.15); color: var(--high);     border: 1px solid var(--high);     }
     .sev-medium   { background: rgba(63,185,80,0.15);  color: var(--medium);   border: 1px solid var(--medium);   }
     .sev-low      { background: rgba(88,166,255,0.15); color: var(--low);      border: 1px solid var(--low);      }
     .sev-info     { background: rgba(139,148,158,0.1); color: var(--info);     border: 1px solid var(--info);     }
 
-    .section-body { padding: 12px 14px; }
-    .section-summary { color: var(--text); margin-bottom: 10px; font-size: 13px; }
-
-    .signal-list { list-style: none; }
-    .signal-list li {
-      padding: 5px 0;
-      border-bottom: 1px solid var(--border);
+    .section-summary {
+      padding: 10px 16px 6px;
       font-size: 12px;
       color: var(--muted);
-    }
-    .signal-list li:last-child { border-bottom: none; }
-    .signal-list li::before { content: "›  "; color: var(--accent-light); }
-
-    /* Confidence note */
-    .confidence-note {
-      font-size: 11px;
-      color: var(--muted);
-      padding: 8px 12px;
-      border: 1px solid var(--border);
-      border-radius: 4px;
-      margin-bottom: 16px;
+      border-bottom: 1px solid var(--border);
       font-style: italic;
     }
 
-    /* Footer */
+    /* ── Article cards ── */
+    .article-card {
+      border-bottom: 1px solid var(--border);
+      padding: 14px 16px;
+    }
+    .article-card:last-child { border-bottom: none; }
+
+    .article-meta {
+      display: flex; align-items: center; gap: 8px; margin-bottom: 6px;
+    }
+    .tag-pill {
+      font-size: 9px; font-weight: 700; letter-spacing: 1px;
+      padding: 2px 7px; border-radius: 3px; text-transform: uppercase;
+    }
+    /* Tag colors */
+    .tag-market     { background: rgba(88,166,255,0.15);  color: #58a6ff; }
+    .tag-macro      { background: rgba(188,140,255,0.15); color: #c69fff; }
+    .tag-crypto     { background: rgba(210,153,34,0.15);  color: #d29922; }
+    .tag-earnings   { background: rgba(63,185,80,0.15);   color: #3fb950; }
+    .tag-conflict   { background: rgba(248,81,73,0.15);   color: #f85149; }
+    .tag-sanctions  { background: rgba(210,153,34,0.15);  color: #d29922; }
+    .tag-diplomacy  { background: rgba(63,185,80,0.15);   color: #3fb950; }
+    .tag-intelligence { background: rgba(188,140,255,0.15); color: #c69fff; }
+    .tag-cve        { background: rgba(248,81,73,0.15);   color: #f85149; }
+    .tag-kev        { background: rgba(210,153,34,0.15);  color: #d29922; }
+    .tag-breach     { background: rgba(248,81,73,0.2);    color: #f85149; }
+    .tag-malware    { background: rgba(248,81,73,0.15);   color: #f85149; }
+    .tag-ransomware { background: rgba(248,81,73,0.2);    color: #f85149; }
+    .tag-trending   { background: rgba(88,166,255,0.15);  color: #58a6ff; }
+    .tag-sentiment  { background: rgba(188,140,255,0.15); color: #c69fff; }
+    .tag-social     { background: rgba(63,185,80,0.15);   color: #3fb950; }
+    .tag-default    { background: rgba(139,148,158,0.1);  color: #8b949e; }
+
+    .source-name { font-size: 10px; color: var(--muted); }
+
+    .article-headline {
+      font-size: 14px; font-weight: 700; color: var(--text);
+      line-height: 1.35; margin-bottom: 6px;
+    }
+    .article-snippet {
+      font-size: 12px; color: var(--muted); line-height: 1.6; margin-bottom: 10px;
+    }
+    .read-more {
+      display: inline-block;
+      font-size: 11px; font-weight: 600;
+      color: var(--accent-light);
+      text-decoration: none;
+      border: 1px solid rgba(88,166,255,0.3);
+      border-radius: 4px;
+      padding: 3px 10px;
+    }
+
+    /* ── Weekly Watchlist ── */
+    .watchlist-section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      margin-bottom: 20px;
+      overflow: hidden;
+    }
+    .watchlist-item {
+      padding: 10px 16px;
+      border-bottom: 1px solid var(--border);
+      font-size: 12px;
+    }
+    .watchlist-item:last-child { border-bottom: none; }
+    .watchlist-item-label {
+      font-weight: 700; color: var(--accent-light); margin-bottom: 2px;
+    }
+    .watchlist-item-why { color: var(--muted); }
+
+    /* ── Confidence note ── */
+    .confidence-note {
+      font-size: 11px; color: var(--muted);
+      padding: 8px 14px;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      margin-bottom: 18px;
+      font-style: italic;
+    }
+
+    /* ── Footer ── */
     .footer {
       border-top: 1px solid var(--border);
-      padding-top: 14px;
-      margin-top: 20px;
+      padding-top: 16px;
+      margin-top: 8px;
       text-align: center;
     }
     .footer p { font-size: 11px; color: var(--muted); margin-bottom: 4px; }
     .footer a { color: var(--accent-light); text-decoration: none; }
 
-    /* Weekly extras */
-    .watchlist { margin-top: 8px; }
-    .watchlist-item {
-      display: inline-block;
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: 4px;
-      padding: 3px 8px;
-      margin: 2px;
-      font-size: 11px;
-      color: var(--accent-light);
-    }
-
+    /* ── Light mode ── */
     @media (prefers-color-scheme: light) {
       :root {
         --bg: #f6f8fa;
@@ -156,7 +219,18 @@
         --muted: #656d76;
         --accent: #0969da;
         --accent-light: #0969da;
+        --card-bg: #ffffff;
       }
+      .top-story-banner { background: linear-gradient(135deg, #c0392b, #96281b); }
+    }
+
+    /* ── Mobile ── */
+    @media (max-width: 600px) {
+      .wrapper { padding: 12px 10px; }
+      .digest-title { font-size: 18px; }
+      .top-story-headline { font-size: 14px; }
+      .header-top { flex-direction: column; gap: 4px; }
+      .datestamp { text-align: left; }
     }
   </style>
 </head>
@@ -166,117 +240,76 @@
   <!-- HEADER -->
   <div class="header">
     <div class="header-top">
-      <span class="brand">DAILY INTELLIGENCE</span>
+      <span class="brand">⚡ Daily Intelligence</span>
       <span class="datestamp">{{ date_str }}<br>{{ time_str }} ET</span>
     </div>
-    <div class="digest-title">{{ title }}</div>
-    <div class="digest-subtitle">Powered by daily-intel &bull; Claude Haiku &bull; {{ item_count }} signals analyzed</div>
+    <div class="digest-title">{{ digest.subject_line or title }}</div>
+    <div class="digest-subtitle">{{ item_count }} signals analyzed &bull; daily-intel open source platform</div>
   </div>
 
+  <!-- TOP STORY BANNER -->
+  {% if digest.top_story_headline %}
+  <div class="top-story-banner">
+    <div class="top-story-label">🔴 Top Story</div>
+    <div class="top-story-headline">{{ digest.top_story_headline }}</div>
+  </div>
+  {% endif %}
+
   <!-- EXECUTIVE BRIEF -->
+  {% if digest.executive_brief %}
   <div class="executive-brief">
     <div class="section-label">Executive Brief</div>
     {{ digest.executive_brief }}
   </div>
-
-  <!-- MARKET PULSE -->
-  {% if digest.market_pulse %}
-  <div class="section">
-    <div class="section-header">
-      <span class="section-title">📈 Market Pulse</span>
-      <span class="severity-badge sev-{{ digest.market_pulse.severity | lower }}">{{ digest.market_pulse.severity }}</span>
-    </div>
-    <div class="section-body">
-      <p class="section-summary">{{ digest.market_pulse.summary }}</p>
-      {% set movers = digest.market_pulse.top_movers or digest.market_pulse.notable_moves %}
-      {% if movers %}
-      <ul class="signal-list">
-        {% for item in movers %}<li>{{ item }}</li>{% endfor %}
-      </ul>
-      {% endif %}
-      {% if digest.market_pulse.outlook %}
-      <p style="margin-top:8px; font-size:12px; color:var(--muted); font-style:italic;">Outlook: {{ digest.market_pulse.outlook }}</p>
-      {% endif %}
-    </div>
-  </div>
   {% endif %}
 
-  <!-- GEOPOLITICAL WATCH -->
-  {% if digest.geopolitical_watch %}
+  <!-- SECTIONS WITH ARTICLE CARDS -->
+  {% for section in digest.sections %}
   <div class="section">
     <div class="section-header">
-      <span class="section-title">🌍 Geopolitical Watch</span>
-      <span class="severity-badge sev-{{ digest.geopolitical_watch.severity | lower }}">{{ digest.geopolitical_watch.severity }}</span>
-    </div>
-    <div class="section-body">
-      <p class="section-summary">{{ digest.geopolitical_watch.summary }}</p>
-      {% set events = digest.geopolitical_watch.key_events or digest.geopolitical_watch.key_developments %}
-      {% if events %}
-      <ul class="signal-list">
-        {% for item in events %}<li>{{ item }}</li>{% endfor %}
-      </ul>
-      {% endif %}
-      {% if digest.geopolitical_watch.escalation_risks %}
-      <p style="margin-top:10px; font-size:11px; color:var(--high); font-weight:600;">ESCALATION WATCH:</p>
-      <ul class="signal-list">
-        {% for risk in digest.geopolitical_watch.escalation_risks %}<li>{{ risk }}</li>{% endfor %}
-      </ul>
+      <span class="section-title">{{ section.title }}</span>
+      {% if section.severity %}
+      <span class="severity-badge sev-{{ section.severity | lower }}">{{ section.severity }}</span>
       {% endif %}
     </div>
-  </div>
-  {% endif %}
+    {% if section.summary %}
+    <div class="section-summary">{{ section.summary }}</div>
+    {% endif %}
 
-  <!-- CYBER THREAT BOARD -->
-  {% if digest.cyber_threat_board %}
-  <div class="section">
-    <div class="section-header">
-      <span class="section-title">🛡️ Cyber Threat Board</span>
-      <span class="severity-badge sev-{{ digest.cyber_threat_board.severity | lower }}">{{ digest.cyber_threat_board.severity }}</span>
-    </div>
-    <div class="section-body">
-      <p class="section-summary">{{ digest.cyber_threat_board.summary }}</p>
-      {% set threats = digest.cyber_threat_board.top_threats or digest.cyber_threat_board.top_vulnerabilities %}
-      {% if threats %}
-      <ul class="signal-list">
-        {% for item in threats %}<li>{{ item }}</li>{% endfor %}
-      </ul>
-      {% endif %}
-      {% if digest.cyber_threat_board.threat_actor_activity %}
-      <p style="margin-top:8px; font-size:12px; color:var(--muted);">{{ digest.cyber_threat_board.threat_actor_activity }}</p>
+    {% for article in section.articles %}
+    <div class="article-card">
+      <div class="article-meta">
+        {% if article.tag %}
+        <span class="tag-pill tag-{{ article.tag | lower | replace(' ', '-') }}">{{ article.tag }}</span>
+        {% endif %}
+        {% if article.source_name %}
+        <span class="source-name">{{ article.source_name }}</span>
+        {% endif %}
+      </div>
+      <div class="article-headline">{{ article.headline }}</div>
+      <div class="article-snippet">{{ article.snippet }}</div>
+      {% if article.source_url %}
+      <a href="{{ article.source_url }}" class="read-more" target="_blank">Read more →</a>
       {% endif %}
     </div>
+    {% endfor %}
   </div>
-  {% endif %}
-
-  <!-- SOCIAL SIGNALS -->
-  {% if digest.social_signals %}
-  <div class="section">
-    <div class="section-header">
-      <span class="section-title">📡 Social Signals</span>
-      <span class="severity-badge sev-{{ digest.social_signals.severity | lower }}">{{ digest.social_signals.severity }}</span>
-    </div>
-    <div class="section-body">
-      <p class="section-summary">{{ digest.social_signals.summary }}</p>
-      {% if digest.social_signals.trending_topics %}
-      <ul class="signal-list">
-        {% for item in digest.social_signals.trending_topics %}<li>{{ item }}</li>{% endfor %}
-      </ul>
-      {% endif %}
-    </div>
-  </div>
-  {% endif %}
+  {% endfor %}
 
   <!-- WEEKLY: NEXT WEEK WATCHLIST -->
   {% if digest.next_week_watchlist %}
-  <div class="section">
+  <div class="watchlist-section">
     <div class="section-header">
       <span class="section-title">🔭 Next Week Watchlist</span>
     </div>
-    <div class="section-body watchlist">
-      {% for item in digest.next_week_watchlist %}
-      <span class="watchlist-item">{{ item }}</span>
-      {% endfor %}
+    {% for item in digest.next_week_watchlist %}
+    <div class="watchlist-item">
+      <div class="watchlist-item-label">{{ item.item if item is mapping else item }}</div>
+      {% if item is mapping and item.why %}
+      <div class="watchlist-item-why">{{ item.why }}</div>
+      {% endif %}
     </div>
+    {% endfor %}
   </div>
   {% endif %}
 
@@ -288,12 +321,14 @@
   <!-- FOOTER -->
   <div class="footer">
     <p><strong>daily-intel</strong> &bull; Open source intelligence platform</p>
-    <p>Data sources: OpenBB &bull; NVD &bull; CISA KEV &bull; GDELT &bull; Bluesky &bull; RSS</p>
+    <p>Sources: yfinance &bull; NVD/CISA &bull; GDELT &bull; Bluesky &bull; RSS</p>
     <p style="margin-top:6px;">
-      <a href="https://github.com/jeff-watson00/daily-intel">github.com/jeff-watson00/daily-intel</a>
+      <a href="https://github.com/blakperlz/daily-intel">github.com/blakperlz/daily-intel</a>
+      &nbsp;&bull;&nbsp;
+      <a href="https://github.com/blakperlz/daily-intel/tree/main/digests">Archive</a>
     </p>
-    <p style="margin-top:8px; font-size:10px;">
-      This digest is for informational purposes only. Not financial or legal advice.
+    <p style="margin-top:8px; font-size:10px; color: var(--muted);">
+      For informational purposes only. Not financial or legal advice.
     </p>
   </div>
 

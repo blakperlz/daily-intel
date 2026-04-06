@@ -46,9 +46,10 @@ def render_digest(digest: Dict[str, Any], digest_type: str, item_count: int) -> 
 
 
 def _build_plain_text(title: str, digest: Dict[str, Any]) -> str:
+    subject = digest.get("subject_line") or title
     lines = [
-        title,
-        "=" * len(title),
+        subject,
+        "=" * len(subject),
         "",
         "EXECUTIVE BRIEF",
         "-" * 30,
@@ -56,26 +57,27 @@ def _build_plain_text(title: str, digest: Dict[str, Any]) -> str:
         "",
     ]
 
-    sections = [
-        ("MARKET PULSE", digest.get("market_pulse", {}), "top_movers", "notable_moves"),
-        ("GEOPOLITICAL WATCH", digest.get("geopolitical_watch", {}), "key_events", "key_developments"),
-        ("CYBER THREAT BOARD", digest.get("cyber_threat_board", {}), "top_threats", "top_vulnerabilities"),
-        ("SOCIAL SIGNALS", digest.get("social_signals", {}), "trending_topics", "trending_topics"),
-    ]
-
-    for section_name, data, key1, key2 in sections:
-        if not data:
-            continue
-        lines += [section_name, "-" * 30, data.get("summary", ""), ""]
-        items = data.get(key1) or data.get(key2, [])
-        for item in items:
-            lines.append(f"  • {item}")
-        lines.append("")
+    for section in digest.get("sections", []):
+        lines += [section.get("title", "").upper(), "-" * 30]
+        if section.get("summary"):
+            lines += [section["summary"], ""]
+        for article in section.get("articles", []):
+            lines.append(f"  ▸ {article.get('headline', '')}")
+            if article.get("snippet"):
+                lines.append(f"    {article['snippet']}")
+            if article.get("source_url"):
+                lines.append(f"    {article['source_url']}")
+            lines.append("")
 
     if digest.get("next_week_watchlist"):
         lines += ["NEXT WEEK WATCHLIST", "-" * 30]
         for item in digest["next_week_watchlist"]:
-            lines.append(f"  • {item}")
+            if isinstance(item, dict):
+                lines.append(f"  • {item.get('item', '')}")
+                if item.get("why"):
+                    lines.append(f"    {item['why']}")
+            else:
+                lines.append(f"  • {item}")
         lines.append("")
 
     if digest.get("confidence_note"):
@@ -83,7 +85,7 @@ def _build_plain_text(title: str, digest: Dict[str, Any]) -> str:
 
     lines += [
         "---",
-        "daily-intel | github.com/jeff-watson00/daily-intel",
+        "daily-intel | github.com/blakperlz/daily-intel",
         "For informational purposes only. Not financial or legal advice.",
     ]
 
@@ -103,7 +105,7 @@ def send_digest(digest: Dict[str, Any], digest_type: str, item_count: int) -> bo
     html, plain, title = render_digest(digest, digest_type, item_count)
 
     msg = MIMEMultipart("alternative")
-    msg["Subject"] = title
+    msg["Subject"] = digest.get("subject_line") or title
     msg["From"] = f"daily-intel <{gmail_user}>"
     msg["To"] = ", ".join(recipients)
 
