@@ -25,6 +25,7 @@ llm:
   retry_initial_delay_sec: 2.0
   retry_backoff_multiplier: 2.0
   retry_jitter_sec: 0.5
+  allow_emergency_digest: true     # if all LLMs fail, build a lightweight non-LLM digest
 
 collectors:
   financial:

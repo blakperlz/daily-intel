@@ -7,6 +7,7 @@ import json
 import os
 import random
 import time
+from collections import Counter
 from typing import List, Dict, Any
 
 from models.intel_item import IntelItem
@@ -55,6 +56,11 @@ def generate_digest(items: List[IntelItem], digest_type: str = "daily") -> Dict[
                     f"Trying fallback '{provider_chain[idx + 1]}'."
                 )
                 continue
+
+            if cfg.get("allow_emergency_digest", True):
+                print("[llm] All providers failed. Returning emergency non-LLM digest.")
+                return _build_emergency_digest(items, errors)
+
             raise RuntimeError(
                 "All configured LLM providers failed: " + " | ".join(errors)
             ) from exc
@@ -124,6 +130,65 @@ def _generate_gemini(user_message: str, cfg: dict) -> Dict[str, Any]:
 def _is_quota_or_rate_limit_error(exc: Exception) -> bool:
     msg = str(exc).lower()
     return any(token in msg for token in ["429", "resource_exhausted", "quota", "rate limit"])
+
+
+def _build_emergency_digest(items: List[IntelItem], errors: List[str]) -> Dict[str, Any]:
+    """Build a lightweight digest from collected data when LLM providers are unavailable."""
+    by_domain = {
+        "financial": [],
+        "geopolitical": [],
+        "cyber": [],
+        "social": [],
+    }
+    sev_counter = Counter()
+
+    for item in items:
+        domain = item.domain.value
+        if domain in by_domain:
+            by_domain[domain].append(item)
+        sev_counter[item.severity.value] += 1
+
+    def top_lines(domain_items: List[IntelItem], max_items: int = 5) -> List[str]:
+        lines = []
+        for intel in domain_items[:max_items]:
+            lines.append(f"{intel.title} ({intel.source})")
+        return lines
+
+    highest = "INFO"
+    for level in ["critical", "high", "medium", "low", "info"]:
+        if sev_counter[level] > 0:
+            highest = level.upper()
+            break
+
+    return {
+        "executive_brief": (
+            f"Emergency digest generated without an LLM. {len(items)} total signals were collected "
+            "and summarized directly from source headlines."
+        ),
+        "market_pulse": {
+            "summary": f"{len(by_domain['financial'])} market signals captured.",
+            "top_movers": top_lines(by_domain["financial"]),
+            "severity": highest,
+        },
+        "geopolitical_watch": {
+            "summary": f"{len(by_domain['geopolitical'])} geopolitical signals captured.",
+            "key_events": top_lines(by_domain["geopolitical"]),
+            "severity": highest,
+        },
+        "cyber_threat_board": {
+            "summary": f"{len(by_domain['cyber'])} cyber signals captured.",
+            "top_threats": top_lines(by_domain["cyber"]),
+            "severity": highest,
+        },
+        "social_signals": {
+            "summary": f"{len(by_domain['social'])} social signals captured.",
+            "trending_topics": top_lines(by_domain["social"]),
+            "severity": highest,
+        },
+        "confidence_note": (
+            "Primary LLM providers were unavailable during this run: " + " | ".join(errors)
+        ),
+    }
 
 
 def _throttle_gemini_requests(cfg: dict) -> None:
