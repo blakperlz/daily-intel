@@ -16,7 +16,7 @@ digest:
 
 llm:
   provider: "gemini"               # claude | gemini | ollama
-  model: "gemini-1.5-flash"
+  model: "gemini-1.5-flash-latest"
   max_tokens: 2048
   temperature: 0.3                 # Low temp = consistent, factual output
 
